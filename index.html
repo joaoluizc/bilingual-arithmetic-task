@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>LabLing - Estudo de Processamento Aritmético Bilíngue</title>
+  <meta charset="utf-8">
+  <link rel="icon" type="image/png" href="favicon-circle.png">
+  <script src="jspsych/jspsych.js"></script>
+  <script src="jspsych/plugin-audio-keyboard-response.js"></script>
+  <script src="jspsych/plugin-html-button-response.js"></script>
+  <script src="jspsych/plugin-html-keyboard-response.js"></script>
+  <script src="jspsych/plugin-survey-text.js"></script>
+  <script src="jspsych/plugin-instructions.js"></script>
+  <script src="jspsych/plugin-survey-multi-choice.js"></script>
+  <script src="lista_stimuli_v7.js"></script>
+  <script src="lista_prac_v7.js"></script>
+  <link rel="stylesheet" href="jspsych/jspsych.css" type="text/css"></link>
+</head>
+<style>
+  .introduction_text {
+    text-align: justify;
+    width: 80%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .regular_text {
+    text-align: justify;
+    width: 80%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .question {
+    text-align: center;
+    width: 400px;
+  }
+  .answer_left {
+    text-align: center;
+    float: left;
+  }
+  .answer_right {
+    text-align: center;
+    float: right;
+  }
+</style>
+<body></body>
+<script>
+
+  var practice_list_show_problems = lista_prac_show_problems;
+  var practice_list_hide_problems = lista_prac_hide_problems;
+  var stimuli_list = lista_stimuli;
+
+  var jsPsych = initJsPsych({
+    // use_webaudio: false,
+    show_progress_bar: true,
+    auto_update_progress_bar: false,
+    on_finish: function() {
+            // console.log(jsPsych.getProgressBarCompleted());
+            // jsPsych.data.displayData();
+            let data_collection = jsPsych.data.get();
+            let data_collection_json = data_collection.json(true); // true: pretty print com tabs
+            let data_collection_csv = data_collection.csv();
+            let user_email = data_collection.select('response').values[1].email; // tcle[0], email[1]
+            if (user_email.length==0) user_email = "nao.informado@nao.informado";
+            let time_stamp = Date.now(); // para zerar probabilidade de homônimos
+            let file_name = user_email + "_" + time_stamp;
+            /*
+            // deixa o arquivo de saída JSON um pouco mais legível "manualmente"
+            data_collection_json = data_collection_json.replace(/\[\{/g,"[\n{\n");
+            data_collection_json = data_collection_json.replace(/\}\]/g,"}\n]\n");
+            data_collection_json = data_collection_json.replace(/\}\,\{/g,"}\n,\n{\n");
+            data_collection_json = data_collection_json.replace(/\,\"/g,",\n\"");
+            data_collection_json = data_collection_json.replace(/\}\n\,/g,",\n},\n");
+            data_collection_json = data_collection_json.replace(/\}\,\n\{/g,"},\n{\n");
+            data_collection_json = data_collection_json.replace(/\}\n\]/g,",\n}\n]\n");
+            */
+            saveData(file_name,data_collection_json,data_collection_csv);
+        }
+  });
+
+  timeline = [];
+
+  var hello = {
+    on_start: function(){
+      document.body.style.width = '60%';
+      document.body.style.margin = 'auto';
+      document.body.style.backgroundColor = '#F5E6BB'; // background color
+      document.body.style.color = 'black'; // font color
+    },
+    type: jsPsychInstructions,
+    pages: [
+    '<p style="text-align:center"><img src="lab_logo.png" style="width: 80%; margin-top: -4em;"></p>'+
+    '<p style="text-align:center; font-size:larger; font-weight: bold;">Estudo de processamento aritmético bilíngue</p>'+
+    '<p style="text-align:justify">Olá, seja bem-vindo(a) ao estudo de processamento aritmético bilíngue. Sua colaboração é muito importante!'+
+    '<br>Essa pesquisa conta com quatro etapas:'+
+    '<br><br><b>1) Ler e assinar o Termo de Consentimento Livre e Esclarecido (TCLE).'+
+    '<br>2) Responder um questinário biográfico.'+
+    '<br>3) Fazer o teste de proficiência.'+
+    '<br>4) Fazer a tarefa de processamento aritmético bilíngue.</b></p>' 
+    ],
+      button_label_next: "Entendi. Continuar",
+      button_label_previous: "Voltar",
+      show_clickable_nav: true,
+      on_finish: update_progress_bar
+  }
+  timeline.push(hello);
+
+var survey_page_tcle = {
+  on_start: function(){
+    document.body.style.width = '50%';
+    document.body.style.margin = 'auto';
+  },
+  type: jsPsychSurveyMultiChoice,
+  questions: [
+    { 
+      name: 'tcle',
+      prompt: 
+      `<p style= "text-align: center;">
+        <span style="font-style: italic;">Participação em Experimento de Processamento Aritmético Bilíngue<br> Termo de Consentimento Livre e Esclarecido (TCLE) baseado na resolução 510/2016 de acordo com o CNS (Conselho Nacional de Saúde)</span><br><br>
+        <span style="font-weight: bold;">UNIVERSIDADE FEDERAL DE SANTA CATARINA <br> CENTRO DE COMUNICAÇÃO E EXPRESSÃO <br> PROGRAMA DE PÓS-GRADUAÇÃO EM INGLÊS <br> LABLING – LABORATÓRIO DA LINGUAGEM E PROCESSOS COGNITIVOS</span></p>
+
+        <p style= "text-align: center; line-height: 1em;"><span style="font-size: smaller;">Se desejar, use a função "imprimir" do seu navegador <br> para gerar uma cópia desse documento.</p></span>
+      </p>
+      <p> Caro (a) participante, </p>
+      <p> Eu, João Luiz Coelho, aluno de mestrado no Programa de Pós-Graduação em Inglês: Estudos Linguísticos e Literários da Universidade Federal de Santa Catarina, orientado pela Professora Dra. Mailce Borges Mota, gostaria de convidá-lo(a) a participar da minha pesquisa, intitulada "Forty-one mais vinte e quatro: Uma Investigação sobre o Processamento Aritmético em Bilíngues tardios com Proficiência alta e baixa". </p>
+      <p> O objetivo da pesquisa é investigar o impacto da proficiência na segunda língua (inglês) quando adultos resolvem problemas aritméticos simples e complexos. Peço que você leia este formulário de consentimento e que, antes de concordar em participar do estudo, tire todas as dúvidas que possam surgir.</p>
+      <p> A coleta de dados se dará de maneira remota, em algum computador que você tiver a seu dispor. Se você concordar em participar deste estudo, você será solicitado(a) a responder um questionário de contexto de aprendizagem de línguas e de matemática, realizar um teste de proficiência e uma tarefa de processamento aritmético bilíngue. Todas as tarefas serão feitas por você de maneira assíncrona, quando houver disponibilidade de tempo. No questionário, você será convidado a responder perguntas sobre alguns dados pessoais, de aprendizagem de línguas e de aprendizagem de matemática (por exemplo, idade, sexo, escolaridade, hábitos com a segunda língua e em que contexto aprendeu matemática). Nenhuma pergunta do questionário é obrigatória, reservando o seu direito de não responder qualquer questão, sem necessidade de explicação ou justificativa para tal. No teste de proficiência, você realizará atividades de leitura, escuta e escrita, que durará aproximadamente 30 minutos. Na tarefa de processamento aritmético bilíngue, você ouvirá problemas aritméticos simples (2 + 2) e complexos (21 - 3) de adição, subtração, multiplicação e divisão, e deverá escolher a alternativa correta entre duas que aparecerão na tela, ao pressionar suas respectivas teclas no teclado. Seu tempo de resposta será registrado automaticamente. Esta tarefa terá duração aproximada de 30 minutos.</p>
+      <p> Em decorrência da participação nesta pesquisa, você pode estar exposto(a) a eventuais riscos, mesmo que baixos, tais como nervosismo, constrangimento, cansaço ou aborrecimento inerentes a qualquer situação de avaliação. Para minimizar esses riscos sessões de prática serão feitas antes da realização da tarefa de processamento aritmético bilíngue para que você possa se familiarizar com os procedimentos. O experimento será dividido em blocos e você pode descansar um pouco entre eles. Outro risco existente é de outras pessoas terem acesso aos seus dados (quebra de sigilo) contra a vontade dos pesquisadores responsáveis. Para evitar que isso aconteça, quatro medidas serão tomadas. Primeiramente, a coleta de dados será conduzida de maneira individual, somente um participante por vez. Todos os dados, incluindo os que contém informações pessoais, serão armazenados em uma mídia física no Laboratório da Linguagem e Processos Cognitivos (LabLing). Os dados que contém os resultados dos testes conduzidos e experimentos feitos serão categorizados com códigos alfanuméricos (como P21041501), de maneira que não será possível identificar os participantes. É importante ressaltar que esses dados codificados, e somente eles, serão publicados em um repositório online para aferição de outros pesquisadores e transparência na prática científica. Nenhum dado pessoal seu será publicado.</p>
+      <p> Como consequência inevitável da participação neste estudo, você receberá o resultado de seu teste de proficiência em língua inglesa, o que pode ajudá-lo a conhecer mais sobre suas habilidades na língua. O estudo também trará benefícios para a área da psicolinguística, adicionando evidências sobre a associação ou dissociação entre bilinguismo e cognição numérica.</p>
+      <p> Você não pode receber nenhum valor financeiro por participar desta pesquisa, mas, se você tiver alguma despesa por participar da pesquisa, terá direito a ressarcimento do valor gasto. Se você tiver qualquer custo extra com internet enquanto estiver fazendo as atividades da pesquisa, vamos nos responsabilizar pela despesa com internet.  Caso venha sofrer qualquer prejuízo, material ou imaterial, comprovadamente decorrente de sua participação nesta pesquisa, você será indenizado de acordo com a legislação vigente. Os pesquisadores estarão à disposição para esclarecimentos antes, durante e depois da pesquisa. Você tem assegurada a liberdade de desistir de participar a qualquer momento do estudo, sem nenhuma penalização. </p>
+      <p> Somente os pesquisadores responsáveis terão acesso aos seus dados pessoais e tomaremos todas as medidas cabíveis para não revelar a sua identidade. Utilizaremos códigos para identificar seus dados, ao invés do seu nome (por exemplo, P21041501).  Os dados armazenados digitalmente serão acessados apenas pelos pesquisadores responsáveis pelo estudo. Dados físicos (como registros de acompanhamento de coleta de dados) serão guardados em armário chaveado no LabLing. Somente os pesquisadores responsáveis terão acesso às chaves dos armários. Os resultados desta pesquisa serão divulgados em eventos ou publicações científicas sem qualquer identificação dos participantes. Seus dados serão codificados e serão analisados em conjunto com os dados de outros participantes, sem qualquer identificação pessoal.  Você pode ter acesso aos resultados da pesquisa a qualquer momento entrando em contato com os pesquisadores.</p>
+      <p> Para assegurar rigor metodológico e garantir transparência na ciência, este estudo está pré-registrado na plataforma Open Science Framework (OSF). Isso significa que alguns detalhes do estudo, como o seu objetivo, as perguntas de pesquisa e hipóteses, a natureza e desenho do estudo, os procedimentos de coleta de dados, as variáveis a serem medidas e analisadas e o plano de análise estatística estão disponíveis de maneira pública na internet. Além disso, os dados coletados, após serem anonimizados e codificados para garantir que os participantes não sejam identificados, serão disponibilizados na mesma plataforma, OSF, para garantir uma prática transparente e reprodutível. O presente estudo pretende publicar os seguintes dados obtidos: tempos de reação dos participantes para cada estímulo em milissegundos, acurácia na resolução de cada problema aritmético codificado em 0 ou 1, escore de cada habilidade no teste de proficiência de acordo com o Quadro Comum Europeu de Referência para Línguas (CEFR), a idade de aquisição da L2, em anos (por exemplo, 14 anos), e a média e desvio padrão da idade dos participantes, em anos. Caso alguma outra variável analisada demonstre capacidade de explicar estatisticamente os resultados (por exemplo, a frequência com que o participante faz cálculos mentais no dia a dia), esses dados serão também incluídos na publicação. Porém, caso a variável permita de alguma maneira identificar os participantes, esses dados não serão incluídos na publicação de dados. Nenhum dado pessoal seu será publicado.</p>
+      <p> Os procedimentos metodológicos adotados obedecem aos preceitos éticos implicados em pesquisas envolvendo seres humanos, conforme normatizado pela Resolução do Conselho Nacional de Saúde nº 510 de 07 de abril de 2016, que dispõe sobre as normas aplicáveis a pesquisas em Ciências Humanas e Sociais. Os pesquisadores também aderem a esse documento e comprometem-se a conduzir a pesquisa de acordo com o que preconiza a referida Resolução. Além disso, garantimos o cumprimento da Lei Geral de Proteção de Dados ((13.709/2018) com relação à proteção de seus dados pessoais, bem como do Ofício Circular Nº 2/2021/CONEP/SECNS/MS, que trata de pesquisas com etapas em ambientes virtuais, como é o caso de nosso estudo.</p>
+      <p> Você tem o direito de revogar a utilização e publicação dos seus dados em qualquer momento, mesmo após concordar com este termo. Para revogar a utilização dos seus dados ou sanar quaisquer dúvidas, você pode entrar em contato com João Luiz Coelho, pelo e-mail joaocoelho.tdm@gmail.com ou pelo telefone (48) 999859498, ou com a professora Dra. Mailce Borges Mota através do e-mail mailce.mota@ufsc.br, telefone (48) 3721-3792, ou no prédio do Centro de Comunicação e Expressão – CCE, bloco B, sala 513, Universidade Federal de Santa Catarina, UFSC.</p>
+      <p> Esta pesquisa foi avaliada e aprovada pelo Comitê de Ética em Pesquisa com Seres Humanos (CEPSH) da UFSC. O CEPSH é um órgão colegiado interdisciplinar, deliberativo, consultivo e educativo, vinculado à Universidade Federal de Santa Catarina, mas independente na tomada de decisões, criado para defender os interesses dos participantes da pesquisa em sua integridade e dignidade e para contribuir no desenvolvimento da pesquisa dentro de padrões éticos. Caso você tenha alguma dúvida ou reclamação quanto à condução ética dessa pesquisa, você pode entrar em contato com o CEPSH – UFSC. Endereço: Prédio da Reitoria II, 4º andar, sala 401, Rua Desembargador Vitor Lima, nº222, Trindade, CEP 88040-400, Florianópolis-SC. Telefone: (48) 3721-6094. E-mail: cep.propesq@contato.ufsc.br.</p>
+      <p> Após a leitura do presente termo e de sua concordância em participar do estudo, solicitamos que informe seu consentimento na próxima pergunta deste questionário online. Sua participação somente ocorrerá se você concordar com este termo. Uma via desse termo será enviada para o e-mail informado nesse questionário para que você também tenha acesso futuro a esse documento. Este é um documento importante que traz informações de contato e garante os seus direitos como participante da pesquisa, por isso solicitamos que o guarde. Você terá acesso ao registro do seu consentimento sempre que solicitado. </p>
+      <p> </p>`,
+      options: [
+        `Concordo participar de maneira voluntária na pesquisa 'Forty-one mais vinte e quatro: Uma Investigação sobre o Processamento Aritmético em Bilíngues tardios com Proficiência alta e baixa', de autoria de João Luiz Coelho.`,
+        'Eu não concordo em participar da pesquisa.'
+      ],
+      horizontal: true
+    },
+        ],
+        button_label: 'próximo',
+        required: true,
+        post_trial_gap: 100,
+        on_finish: function() {
+          // captura o texto da alternativa de aceite do TCLE
+          var current_trial = jsPsych.getCurrentTrial();
+          var ok_text = current_trial.questions[0].options[0];
+          // captura o texto da alternativa escolhida pelo participante
+          var last_trial_data = jsPsych.data.getLastTrialData();
+          var user_text = last_trial_data.select('response').values[0].tcle;
+          // compara as duas e chama uma página de "despedida" caso não sejam iguais
+          if (user_text != ok_text) {
+            window.location.assign("goodbye.html");
+            console.log("User didn't agree with terms and conditions. Redirecting to goodbye page.");
+          }
+          update_progress_bar;
+        }
+};
+timeline.push(survey_page_tcle);
+
+var survey_page_name_email = {
+  on_start: function(){
+    document.body.style.width = '100%';
+    document.body.style.margin = 'auto';
+  },
+  type: jsPsychSurveyText,
+  preamble: 
+    '<div class="regular_text"><p>Informe seu e-mail para que possamos enviar um retorno sobre a pesquisa. Será nesse e-mail que você receberá uma versão do termo de consentimento.</p></div>',
+  questions: [
+    //{prompt: 'Qual é o seu nome?', rows:2, columns: 50, name: 'name'},
+    {prompt: '<b>Informe o seu e-mail:</b>', rows:2, columns: 50, name: 'email'}
+  ],
+  button_label: 'próximo',
+  randomize_question_order: false,
+  post_trial_gap: 100,
+  on_finish: update_progress_bar  // sem parênteses, para que seja executada "depois"
+};
+timeline.push(survey_page_name_email);
+
+var survey_page_age = {
+  type: jsPsychSurveyText,
+  questions: [
+    { prompt: 'Qual a sua idade (anos completos)?', name: 'age', rows:2, columns: 5 },
+  ],
+  button_label: 'próximo',
+  post_trial_gap: 100,
+  on_finish: update_progress_bar
+};
+timeline.push(survey_page_age);
+
+var survey_page_nationality = {
+  type: jsPsychSurveyText,
+  questions: [
+    { prompt: 'Qual a sua nacionalidade?', name: 'nationality', rows:2, columns: 50 },
+  ],
+  button_label: 'próximo',
+  post_trial_gap: 100,
+  on_finish: update_progress_bar  
+};
+timeline.push(survey_page_nationality);
+
+var survey_page_occupation = {
+  type: jsPsychSurveyText,
+  questions: [
+    { prompt: 'Qual a sua ocupação?', name: 'occupation', rows:2, columns: 50 },
+  ],
+  button_label: 'próximo',
+  post_trial_gap: 100,
+  on_finish: update_progress_bar  
+};
+timeline.push(survey_page_occupation);
+
+var survey_page_handedness = {
+  type: jsPsychSurveyMultiChoice,
+  questions: [
+    { prompt: 'Você é:<br><span style="color: red"></span>', 
+      name: 'handedness', options: ['canhoto','destro'] },
+  ],
+  button_label: 'próximo',
+  post_trial_gap: 100,
+  on_finish: update_progress_bar  
+};
+timeline.push(survey_page_handedness);
+
+var survey_page_sex = {
+  type: jsPsychSurveyMultiChoice,
+  questions: [
+    { prompt: 'Sexo:<br><span style="color: red"></span>', 
+      name: 'sex', options: ['masculino','feminino', 'outro'] },
+  ],
+  button_label: 'próximo',
+  post_trial_gap: 100,
+  on_finish: update_progress_bar  
+};
+timeline.push(survey_page_sex);
+
+var survey_page_schooling = {
+  type: jsPsychSurveyMultiChoice,
+  questions: [
+    { 
+      prompt: 'Qual o seu nível de escolaridade?', name: 'schooling', 
+      options: [
+          'Ensino Médio completo',
+          'Ensino Médio incompleto',
+          'Ensino Superior completo',
+          'Ensino Superior incompleto',
+          'Pós-graduação/Especialização (completo ou incompleto)',
+          'Pós-graduação/Mestrado (completo ou incompleto)',
+          'Pós-graduação/Doutorado (completo ou incompleto)',
+          ] 
+      },
+  ],
+  button_label: 'próximo',
+  post_trial_gap: 100,
+  on_finish: update_progress_bar  
+};
+timeline.push(survey_page_schooling);
+
+var survey_page_n_spoken_idioms = {
+  type: jsPsychSurveyMultiChoice,
+  questions: [
+    { 
+      prompt: 'Além do português, quantos idiomas você <b>fala</b>?', name: 'n_spoken_idioms', 
+      options: ['0','1','2','3','4+'] 
+    },
+    { 
+      prompt: 'Além do português, quais idiomas você <b>fala</b>?', name: 'spoken_idioms_select',
+      options: [
+        "Nenhum",
+        "Alemão", 
+        "Árabe", 
+        "Espanhol", 
+        "Francês",
+        "Hindi",
+        "Inglês", 
+        "Italiano",
+        "Japonês", 
+        "Mandarim",
+        "Polonês",
+        "Russo", 
+        "Outro"
+      ] 
+    },
+  ],
+  button_label: 'próximo',
+  post_trial_gap: 100,
+  on_finish: update_progress_bar  
+};
+timeline.push(survey_page_n_spoken_idioms);
+
+var survey_page_n_comprehended_idioms = {
+  type: jsPsychSurveyMultiChoice,
+  questions: [
+    { 
+      prompt: 'Além do português, quantos idiomas você <b>entende</b>?', name: 'n_comprehended_idioms', 
+      options: ['0','1','2','3','4+'] 
+    },
+    { 
+      prompt: 'Além do português, quais idiomas você <b>entende</b>?', name: 'comprehended_idioms_select',
+      options: [
+        "Nenhum",
+        "Alemão", 
+        "Árabe", 
+        "Espanhol", 
+        "Francês",
+        "Hindi",
+        "Inglês", 
+        "Italiano",
+        "Japonês", 
+        "Mandarim",
+        "Polonês",
+        "Russo", 
+        "Outro"
+      ] 
+    },
+  ],
+  button_label: 'próximo',
+  post_trial_gap: 100,
+  on_finish: update_progress_bar  
+};
+timeline.push(survey_page_n_comprehended_idioms);
+
+var survey_page_fluency = {
+  type: jsPsychSurveyMultiChoice,
+  questions: [
+    { 
+      prompt: 'Você se considera fluente em inglês? (É considerado fluente aquele que consegue se comunicar na segunda língua sem precisar recorrer à língua materna)', name: 'fluency',
+      options: [
+          'Sim',
+          'Não'
+          ] 
+    },
+  ],
+  button_label: 'próximo',
+  post_trial_gap: 100,
+  on_finish: update_progress_bar  
+};
+timeline.push(survey_page_fluency);
+
+var survey_page_learning_age = {
+  type: jsPsychSurveyText,
+  questions: [
+    { 
+      prompt: 'Com que idade você começou a aprender Inglês?', name: 'learning_age', rows:2, columns: 5,
+    },
+  ],
+  button_label: 'próximo',
+  post_trial_gap: 100,
+  on_finish: update_progress_bar  
+};
+timeline.push(survey_page_learning_age);
+
+var survey_page_conversation = {
+  type: jsPsychSurveyMultiChoice,
+  questions: [
+    { 
+      prompt: 'Você se sente à vontade para conversar em inglês com alguém que você não conheça?', name: 'conversation',
+      options: [
+          'Sim',
+          'Não'
+          ] 
+    },
+  ],
+  button_label: 'próximo',
+  post_trial_gap: 100,
+  on_finish: update_progress_bar  
+};
+timeline.push(survey_page_conversation);
+
+var survey_page_learning_context = {
+  type: jsPsychSurveyText,
+  questions: [
+    { prompt: 'Em que contexto(s) você aprendeu inglês? (Ex. curso no Brasil, morou no exterior, etc.)', name: 'learning_context_select', rows:2, columns: 50 },
+  ],
+  button_label: 'próximo',
+  post_trial_gap: 100,
+  on_finish: update_progress_bar  
+};
+timeline.push(survey_page_learning_context);
+
+var survey_page_auto_evaluation = {
+  type: jsPsychSurveyMultiChoice,
+  preamble: "Faça uma avaliação do seu desempenho em Inglês:",
+  questions: [
+    { 
+      prompt: '<p style="border-bottom: 1px solid black; padding-bottom: 0.2em; text-align: center; font-weight: bold;">Fala</p>', name: 'auto_evaluation_speaking', horizontal: true,
+      options: ['Excelente', 'Muito bom', 'Bom', 'Regular', 'Ruim'],
+    },
+    { 
+      prompt: '<p style="border-bottom: 1px solid black; padding-bottom: 0.2em; text-align: center; font-weight: bold;">Compreende</p>', name: 'auto_evaluation_comprehension', horizontal: true,
+      options: ['Excelente', 'Muito bom', 'Bom', 'Regular', 'Ruim'],
+    },
+    { 
+      prompt: '<p style="border-bottom: 1px solid black; padding-bottom: 0.2em; text-align: center; font-weight: bold;">Escreve</p>', name: 'auto_evaluation_writing', horizontal: true,
+      options: ['Excelente', 'Muito bom', 'Bom', 'Regular', 'Ruim'],
+    },
+    { 
+      prompt: '<p style="border-bottom: 1px solid black; padding-bottom: 0.2em; text-align: center; font-weight: bold;">Lê</p>', name: 'auto_evaluation_reading', horizontal: true,
+      options: ['Excelente', 'Muito bom', 'Bom', 'Regular', 'Ruim'],
+    },
+  ],
+  button_label: 'próximo',
+  post_trial_gap: 100,
+  on_finish: update_progress_bar  
+};
+timeline.push(survey_page_auto_evaluation);
+
+var survey_page_official_language = {
+  type: jsPsychSurveyMultiChoice,
+  questions: [{ 
+    prompt: 'Você já morou num país no qual o Inglês era o idioma oficial?', name: 'official_language',
+    options: ['Sim','Não'] 
+  },],
+  button_label: 'próximo',
+  post_trial_gap: 100,
+  on_finish: update_progress_bar
+};
+timeline.push(survey_page_official_language);
+
+var survey_page_eng_as_official_language_details = {
+    type: jsPsychSurveyText,
+    preamble: 
+      '<p><b>Sobre o(s) país(es) que você já morou em que Inglês era o idioma oficial:</b></p>',
+    questions: [
+      {prompt: 'Onde você morou?', rows:2, columns: 50, name: 'eng_as_official_language_place_of_living'},
+      {prompt: 'Quanto tempo morou lá?', rows:2, columns: 50, name: 'eng_as_official_language_duration'},
+      {prompt: 'Durante o tempo em que você morou no exterior, em que contexto(s) você utilizou a língua inglesa? (Ex.: em casa, na escola)', rows:2, columns: 50, name: 'eng_as_official_language_context_of_use'}
+    ],
+    button_label: 'próximo',
+    randomize_question_order: false,
+    post_trial_gap: 100,
+    on_finish: update_progress_bar  // sem parênteses, para que seja executada "depois"
+  };
+
+var decide_show_engofflang_details = {
+  timeline: [survey_page_eng_as_official_language_details],
+  conditional_function: function() {
+    let data = jsPsych.data.get().last(1).values()[0].response.official_language;
+    if(data=="Sim"){
+      return true;
+      console.log(data);
+    } else {
+      update_progress_bar;
+      return false;
+    }
+  }
+}
+timeline.push(decide_show_engofflang_details);
+
+var survey_page_formal_instruction = {
+  type: jsPsychSurveyMultiChoice,
+  questions: [{ 
+    prompt: '<div class="regular_text">Você já teve algum tipo de instrução formal em inglês? (Ex. curso de inglês, professor particular, etc.)</div>', name: 'formal_instruction',
+    options: ['Sim','Não'] 
+  },],
+  button_label: 'próximo',
+  post_trial_gap: 100,
+  on_finish: update_progress_bar
+};
+timeline.push(survey_page_formal_instruction);
+
+var survey_page_formal_instruction_details = {
+    type: jsPsychSurveyText,
+    preamble: 
+      '<p><b>Sobre as aulas de Inglês que você relatou ter feito:</b></p>',
+    questions: [
+      {prompt: 'Por quanto tempo você frequentou as aulas?', rows:2, columns: 50, name: 'formal_instruction_duration'},
+      {prompt: 'Você continua tendo aulas de inglês?', rows:2, columns: 50, name: 'formal_instruction_in_the_present'}
+    ],
+    button_label: 'próximo',
+    randomize_question_order: false,
+    post_trial_gap: 100,
+    on_finish: update_progress_bar  // sem parênteses, para que seja executada "depois"
+  };
+
+var decide_show_formal_instruction_details = {
+  timeline: [survey_page_formal_instruction_details],
+  conditional_function: function() {
+    let data = jsPsych.data.get().last(1).values()[0].response.formal_instruction;
+    if(data=="Sim"){
+      return true;
+      console.log(data);
+    } else {
+      update_progress_bar;
+      return false;
+    }
+  }
+}
+timeline.push(decide_show_formal_instruction_details);
+
+var survey_page_l2_communication_frequency = {
+  type: jsPsychSurveyMultiChoice,
+  questions: [{ 
+    prompt: 'Assinale a alternativa que mais combina com você atualmente:', name: 'l2_communication_frequency',
+    options: [
+      "Comunico-me somente em português.",
+      "Comunico-me essencialmente em português, e em inglês raramente.", 
+      "Comunico-me essencialmente em português, e em inglês ocasionalmente (Ex.: em sala de aula apenas).", 
+      "Comunico-me tanto em português quanto em inglês, com a mesma regularidade nas duas línguas."
+    ] 
+  },],
+  button_label: 'próximo',
+  post_trial_gap: 100,
+  on_finish: update_progress_bar  
+};
+timeline.push(survey_page_l2_communication_frequency);
+
+var survey_page_bilingual_contexts_frequency = {
+  type: jsPsychSurveyMultiChoice,
+  questions: [{ 
+    prompt: 'Com que frequência você se encontra num ambiente onde o português e o inglês podem ser utilizados alternadamente?', name: 'bilingual_contexts_frequency',
+    options: [
+      "O tempo todo.",
+      "Quase o tempo todo.", 
+      "Em certas ocasiões.", 
+      "Raramente.",
+      "Nunca."
+    ] 
+  },],
+  button_label: 'próximo',
+  post_trial_gap: 100,
+  on_finish: update_progress_bar  
+};
+timeline.push(survey_page_bilingual_contexts_frequency);
+
+var survey_page_hours_l2_exposure = {
+  type: jsPsychSurveyText,
+  questions: [
+    { prompt: 'Quantas horas por dia/semana você tem contato com o inglês? (Ex.: assistir TV – 2 horas por dia)', name: 'hours_of_l2_exposure', rows:2, columns: 50 },
+  ],
+  button_label: 'próximo',
+  post_trial_gap: 100,
+  on_finish: update_progress_bar  
+};
+timeline.push(survey_page_hours_l2_exposure);
+
+var survey_page_maths_learning_lang = {
+  type: jsPsychSurveyMultiChoice,
+  questions: [{ 
+    prompt: 'Em que língua você foi ensinado matemática?', name: 'maths_learning_lang',
+    options: [
+      "Português",
+      "Inglês", 
+      "Outra"
+    ] 
+  },],
+  button_label: 'próximo',
+  post_trial_gap: 100,
+  on_finish: update_progress_bar  
+};
+timeline.push(survey_page_maths_learning_lang);
+
+var survey_page_maths_use_frequency = {
+  type: jsPsychSurveyMultiChoice,
+  questions: [{ 
+    prompt: 'Com que frequência você usa a matemática (contas simples, como 20 ÷ 4) no seu dia a dia?', name: 'maths_use_frequency',
+    options: [
+      "O tempo todo.",
+      "Quase o tempo todo.", 
+      "Em certas ocasiões.", 
+      "Raramente.",
+      "Nunca."
+    ] 
+  },],
+  button_label: 'próximo',
+  post_trial_gap: 100,
+  on_finish: update_progress_bar  
+};
+timeline.push(survey_page_maths_use_frequency);
+
+var survey_page_mental_calculation_practice = {
+  type: jsPsychSurveyMultiChoice,
+  questions: [{ 
+    prompt: 'Você costuma fazer contas matemáticas simples de cabeça?', name: 'mental_calculation_practice',
+    options: [
+      "Sim",
+      "Não"
+    ] 
+  },],
+  button_label: 'próximo',
+  post_trial_gap: 100,
+  on_finish: update_progress_bar  
+};
+timeline.push(survey_page_mental_calculation_practice);
+
+var survey_page_calculator_use_frequency = {
+  type: jsPsychSurveyMultiChoice,
+  questions: [{ 
+    prompt: 'Quando deparado com contas matemáticas simples, qual o seu hábito de fazê-las de cabeça ou usar o auxílio de uma calculadora?', name: 'calculator_use_frequency',
+    options: [
+      "Sempre tento fazer contas de cabeça.",
+      "Na maioria das vezes faço contas de cabeça, mas às vezes uso a calculadora.", 
+      "Tento fazer contas de cabeça, mas uso a calculadora na metade das vezes.", 
+      "Uso a calculadora na maioria das vezes.",
+      "Sempre uso a calculadora."
+    ] 
+  },],
+  button_label: 'próximo',
+  post_trial_gap: 100,
+  on_finish: update_progress_bar  
+};
+timeline.push(survey_page_calculator_use_frequency);
+
+var survey_page_maths_in_occupation = {
+  type: jsPsychSurveyMultiChoice,
+  questions: [{ 
+    prompt: 'A sua ocupação exige que você faça contas frequentemente?', name: 'maths_in_occupation',
+    options: [
+      "Sim",
+      "Não"
+    ] 
+  },],
+  button_label: 'próximo',
+  post_trial_gap: 100,
+  on_finish: update_progress_bar  
+};
+timeline.push(survey_page_maths_in_occupation);
+
+var survey_page_mental_calculation_self_assessment = {
+  type: jsPsychSurveyMultiChoice,
+  questions: [
+    { prompt: "Faça uma avaliação do seu desempenho em fazer contas de cabeça:", name: 'auto_evaluation_mental_calculation', horizontal: true,
+    options: ['Excelente', 'Muito bom', 'Bom', 'Regular', 'Ruim'],
+    },
+  ],
+  button_label: 'próximo',
+  post_trial_gap: 100,
+  on_finish: update_progress_bar  
+};
+timeline.push(survey_page_mental_calculation_self_assessment);
+
+var survey_page_eng_mental_calculation_freq = {
+  type: jsPsychSurveyMultiChoice,
+  questions: [{ 
+    prompt: 'Com que frequência você faz cálculos de cabeça em inglês?', name: 'eng_mental_calculation_freq',
+    options: [
+      "O tempo todo",
+      "Quase o tempo todo", 
+      "Em certas ocasiões", 
+      "Raramente",
+      "Nunca"
+    ] 
+  },],
+  button_label: 'próximo',
+  post_trial_gap: 100,
+  on_finish: update_progress_bar  
+};
+timeline.push(survey_page_eng_mental_calculation_freq);
+
+var survey_page_eng_mental_calculation_self_assessment = {
+  type: jsPsychSurveyMultiChoice,
+  questions: [
+    { prompt: "Faça uma avaliação do seu desempenho em fazer contas de cabeça <b>em inglês</b>:", name: 'auto_evaluation_eng_mental_calculation', horizontal: true,
+    options: ['Excelente', 'Muito bom', 'Bom', 'Regular', 'Ruim'],
+    },
+  ],
+  button_label: 'próximo',
+  post_trial_gap: 100,
+  on_finish: update_progress_bar  
+};
+timeline.push(survey_page_eng_mental_calculation_self_assessment);
+
+var survey_page_additional_info = {
+  type: jsPsychSurveyText,
+  questions: [{ 
+    prompt: 'Se você tiver outras informações ou observações que achar pertinente, escreva aqui:', name: 'additional_info', rows:2, columns: 50,
+  },],
+  button_label: 'próximo',
+  post_trial_gap: 100,
+  on_finish: update_progress_bar  
+};
+timeline.push(survey_page_additional_info);
+
+var survey_page_proficiency = {
+  type: jsPsychSurveyMultiChoice,
+  preamble: `
+    <div style="text-align: justify">
+    <p style="text-align:center; font-size:larger; font-weight: bold;">Teste de proficiência</p>
+    <p>Agora precisamos saber qual é o seu nível de proficiência na língua inglesa. Para isso, precisamos que você faça um teste no site DIALANG, mantido pela Lancaster University, Inglaterra.</p>
+    <p>Antes de ir para o site, certifique-se de que entendeu bem a sequência abaixo:</p>
+    <ol>
+    <li>acesse o link em uma nova aba <a href="https://dialangweb.lancaster.ac.uk" target="_blank" onclick="window.open(this.href, 'dialang', 'left=50, top=50, width=600, height=600'); return false;">https://dialangweb.lancaster.ac.uk</a>;</i>
+    <li>escolha a língua na qual você prefere ler as instruções;</li>
+    <li>leia as instruções;</li>
+    <li>escolha o teste de <b>estruturas gramaticais <img src="https://dialangweb.lancaster.ac.uk/images/hammer.gif"> em inglês</b><br>(você será encaminhado para o teste de nivelamento);</li>
+    <li>faça o teste de nivelamento;</li>
+    <li>faça o teste de estruturas gramaticais;</li>
+    <li>ao final, seu nível de proficiência será informado pelo DIALANG. Volte para essa aba e responda a questão abaixo.</li>
+    </ol>
+    </div>`,
+  questions: [
+    { 
+      prompt: 'Qual o seu nível de proficiência medido pelo DIALANG?',
+      options: ['C2','C1','B2','B1','A2','A1']
+    },
+  ],
+  button_label: 'próximo',
+  post_trial_gap: 100,
+  on_finish: update_progress_bar  
+};
+timeline.push(survey_page_proficiency);
+
+  //##################  BILINGUAL ARITHMETIC EXPERIMENT  ##################
+
+  var instructions_experiment = {
+    type: jsPsychInstructions,
+    pages: [
+      '<p style="text-align:center"></p>'+
+      `Now, you will do the <b>bilingual arithmetic task.</b><br>`+
+      'In this task, your goal is to answer the arithmetic problems you will hear.'+
+      '<br>These problems will be presented in Portuguese and English.',
+      'After listening to the problem, choose the correct answer between two alternatives that will be shown on the screen.'+
+      '<br/>On your keyboard, use the <strong>"Q"</strong> key to select the alternative on the left, and the <strong>"P"</strong> key to select the alternative on the right.'+
+      '<br><img src="hands_on_keyboard.png" width="50%">',
+      'Do it as fast as you can, your time is being recorded.',
+      `<p style="text-align:center; font-size:200%;"><b>Let's practice!</b></p> By pressing 'Continue', you will see some examples.`+
+      `<br><b>Remember</b>:`+
+      `<br><b>1)</b> Listen to the problem`+
+      `<br><b>2)</b> Select the correct answer by pressing <b>Q</b> or <b>P</b>.`+
+      '<br><p><img src="hands_on_keyboard.png" width="75%"></p>'
+    ],
+    button_label_next: "Continue",
+    button_label_previous: "Go back",
+    show_clickable_nav: true,
+    on_finish: update_progress_bar
+  }
+
+  var inter_trial_interval = {
+    type: jsPsychHtmlKeyboardResponse,
+    stimulus: '',
+    choices: "NO_KEYS",
+    trial_duration: 500,
+    data: {
+        trial_part: 'inter_trial_interval',
+    }
+  };
+
+  var fixation = {
+    type: jsPsychHtmlKeyboardResponse,
+    stimulus: '<span style= "font-size:30px; font-family: monospace">+</span>',
+    choices: "NO_KEYS",
+    trial_duration: 1000,
+    data: {
+        trial_part: 'fixation',
+    }
+  };
+
+  var play_audio = {
+    type: jsPsychAudioKeyboardResponse,
+    // stimulus: 'audio_problems/EN_F_6+9.mp3',
+    stimulus: jsPsych.timelineVariable('audio'),
+    choices: "NO_KEYS",
+    prompt: '<span style= "font-size:30px; font-family: monospace">+</span>',
+    response_allowed_while_playing: false,
+    trial_ends_after_audio: true,
+    data: {
+      audio_file: jsPsych.timelineVariable('audio'),
+      stimulus_language: jsPsych.timelineVariable('lang'),
+    },
+    on_finish: update_progress_bar
+  }
+
+  var count_prac_trials = 0;
+
+  var show_options = {
+    type: jsPsychHtmlKeyboardResponse,
+    stimulus: jsPsych.timelineVariable('prompt'),
+    choices: ['q','p'],
+    trial_duration: 10000,
+    data: {
+      trial_part: 'show_options',
+      correct_answer: jsPsych.timelineVariable('correct_answ'),
+      condition: jsPsych.timelineVariable('condition'),
+    },
+    on_finish: function(data){
+      var correct_answer = data.correct_answer;
+      var user_answer = data.response;
+      if (user_answer == correct_answer) {
+        data.correct = true;
+      } else {
+        data.correct = false;
+      }
+    }
+  }
+
+  var feedback = {
+    type: jsPsychHtmlKeyboardResponse,
+    choices: "NO_KEYS",
+    trial_duration: 500,
+    stimulus: function(){
+      var last_trial_correct = jsPsych.data.get().last(1).values()[0].correct;
+      if(last_trial_correct){
+        return '<img src="icon_right.png" width="15%">'
+        // return '<p style="color:green">Correct!</p>'
+      } else {
+        return '<img src="icon_wrong.png" width="15%">'
+        // return '<p style="color:red">Wrong.</p>'
+      }
+    }
+  }
+
+  var decide_show_instructions_again = {
+    type: jsPsychHtmlButtonResponse,
+    stimulus: 'Congratulations! You completed the <b>practice</b> trials.'+
+    '<br>Would you like read the instructions practice again?',
+    choices: ["Yes, practice again.", "No, continue to the experiment."]
+  }
+
+  var prac_procedure_show_problems = {
+    timeline: [inter_trial_interval, play_audio, show_options, feedback],
+    randomize_order: true,
+    timeline_variables: practice_list_show_problems,
+    on_finish: update_progress_bar
+  }
+
+  var instructions_post_prac_show_problems = {
+    type: jsPsychHtmlButtonResponse,
+    stimulus: `You're doing great!<br>Now, let's practice without the problems on the screen.<br>`,
+    choices: ["Continue"],
+    on_finish: update_progress_bar
+  }
+
+  var prac_procedure_hide_problems = {
+    timeline: [inter_trial_interval, play_audio, show_options, feedback],
+    randomize_order: true,
+    timeline_variables: practice_list_hide_problems,
+    on_finish: update_progress_bar
+  }
+
+  var prac_procedure_loop = {
+    timeline: [instructions_experiment, prac_procedure_show_problems, instructions_post_prac_show_problems, prac_procedure_hide_problems, decide_show_instructions_again],
+    loop_function: function(data){
+      if(jsPsych.data.getLastTrialData().select('response').values == '0'){
+        // console.log(jsPsych.data.getLastTrialData().select('response').values == '0')
+        // prac_size = tamanho da lista de estimulos na pratica + tela de instruções
+        let prac_size = 2*(practice_list_show_problems.length + practice_list_hide_problems.length) + 1;
+        let curr_progress_bar_value = jsPsych.getProgressBarCompleted();
+        let prog_bar_beginning_prac = curr_progress_bar_value - (prac_size/n_trials);
+        console.log("restarting practice procedure");
+        jsPsych.setProgressBar(prog_bar_beginning_prac);
+        count_prac_trials = 0;
+        return true;
+      } else {
+        update_progress_bar();
+        return false;
+      }
+    },
+  }
+  timeline.push(prac_procedure_loop);
+
+  var instructions_reminder = {
+    type: jsPsychHtmlButtonResponse,
+    stimulus: 'Excellent! <br>The experiment will start once you press "Continue". You will no longer see if your answers are right or wrong. Remember:'+
+    '<br>Listen carefully to the problems.'+
+    '<br>Choose the correct answer by pressing <strong>Q</strong> or <strong>P</strong> on your keyboard.',
+    choices: ["Continue"],
+    on_finish: update_progress_bar
+  }
+  timeline.push(instructions_reminder);
+
+  var main_procedure_1 = {
+    timeline: [fixation, play_audio, show_options],
+    randomize_order: true,
+    timeline_variables: stimuli_list,
+    on_finish: update_progress_bar
+  }
+  timeline.push(main_procedure_1);
+
+  var exit_question_translation = {
+    type: jsPsychSurveyText,
+    questions: [
+      {prompt: 'Before finishing, please answer: <br/>Did you translate the English problems to Portuguese to help you calculate the result?'},
+      {prompt: "If yes, please, quickly explain. For example: did you translate the English problems? What about the answers?"}
+    ],
+    button_label: 'Next',
+    on_finish: update_progress_bar
+  };
+  timeline.push(exit_question_translation);
+
+  var goodbye = {
+    type: jsPsychHtmlButtonResponse,
+    stimulus: `Thank you for your time! Please, click 'Submit' to finish.`,
+    choices: ['Submit.'],
+    on_finish: update_progress_bar
+  }
+  timeline.push(goodbye);
+
+  function update_progress_bar() {
+    var curr_progress_bar_value = jsPsych.getProgressBarCompleted();
+    jsPsych.setProgressBar(curr_progress_bar_value + (1/n_trials));
+  }
+
+  function saveData(name, data_json, data_csv){
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', 'write_data.php');
+  xhr.setRequestHeader('Content-Type', 'application/json');
+  xhr.send(JSON.stringify({filename: name, filedata_json: data_json, filedata_csv: data_csv}));
+  }
+
+  var n_trials = timeline.length + 2*(stimuli_list.length + practice_list_show_problems.length + practice_list_hide_problems.length);
+
+  jsPsych.run(timeline);
+</script>
+
+</html>

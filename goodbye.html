@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>LabLing</title>
+    <meta charset="utf-8">
+    <link href="jspsych/jspsych.css" rel="stylesheet" type="text/css">
+    <script src="jspsych/jspsych.js"></script>
+    <script src="jspsych/plugin-instructions.js"></script>
+  </head>
+  <body></body>
+  <script>
+var jspsych = initJsPsych();
+var timeline = [];
+var survey_page_goodbye = {
+            type: jsPsychInstructions,
+            on_start: function() {
+                document.body.style.width = '50%';
+                document.body.style.margin = 'auto';
+                document.body.style.backgroundColor = '#F5E6BB'; // background color
+                document.body.style.color = 'black'; // font color
+            },
+            pages: [
+            '<p style="text-align:center"><img src="lab_logo.png" "></p>' +
+            '<p style="text-align:center; font-size:larger">De todo modo, obrigado pelo interesse!</p>'
+            ],
+        };
+        timeline.push(survey_page_goodbye);
+
+jspsych.run(timeline);
+
+  </script>
+</html>
